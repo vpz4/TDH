@@ -111,7 +111,7 @@ def index():
         return render_template(
             'index.html',
             success=True,
-            message='Harmonization complete!',
+            message='The tabular data harmonization process has been completed!',
             harmonized_file=harmonized_dataset_path if harmonized_dataset_path else None
         )
 

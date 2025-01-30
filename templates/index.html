@@ -8,21 +8,21 @@
 <body style="background-color:#19232d;">
 <div align="center">
    <img src="{{ url_for('static', filename='images/safeaorta.png') }}" width="500" height="150">
-   <h3 style="color:white;font-family:Calibri;text-align:center">Upload Required Files for Harmonization</h3>
+   <h3 style="color:white;font-family:Calibri;text-align:center">Upload Required Files for Tabular Data Harmonization</h3>
    <form method="post" enctype="multipart/form-data">
-       <label style="color:white;font-family:Calibri;text-align:center">Data Quality Report (.xlsx):</label>
+       <label style="color:white;font-family:Calibri;text-align:center">Select the data quality evaluation report (.xlsx):</label>
        <input type="file" name="report" style="color:white;" required>
        <br><br>
        
-       <label style="color:white;font-family:Calibri;text-align:center">Ontology Model (.xml/.owl):</label>
+       <label style="color:white;font-family:Calibri;text-align:center">Select the data model (.xml/.owl):</label>
        <input type="file" name="xml" style="color:white;" required>
        <br><br>
        
-       <label style="color:white;font-family:Calibri;text-align:center">Dataset for Harmonization (.csv) (Optional):</label>
+       <label style="color:white;font-family:Calibri;text-align:center">(Optional) Select a tabular dataset for harmonization (.csv):</label>
        <input type="file" name="dataset" style="color:white;">
        <br><br>
        
-       <input type="submit" value="Submit" style="margin-bottom: 50px;">
+       <input type="submit" value="Submit" style="margin-top: 25px; margin-bottom: 25px">
    </form>
 
     {% if success %}
