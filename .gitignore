@@ -2,3 +2,4 @@ test
 *.pyc
 filter_corpus.py
 results/*.xlsx
+/vocabulary_reduced_SNOMED_LOINC_ICD9CM_ICD10CM_OMOP.csv
