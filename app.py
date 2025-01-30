@@ -13,24 +13,26 @@ nltk.download('wordnet')
 nltk.download('omw-1.4')
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = "uploads"
 app.config['RESULTS_FOLDER'] = "results"
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
+CORPUS_PATH = "corpus_REDUCED.csv"
 
 def extract_metadata_from_report(report_path):
+    print("Extracting metadata from report...")
     report_df = pd.read_excel(report_path, skiprows=12)
     report_df = report_df.iloc[:, :2]
     report_df.columns = ['Feature Name', 'Value Range']
     return report_df.to_dict('records')
 
 def extract_semantic_knowledge_from_xml(xml_path):
+    print("Extracting semantic knowledge from XML...")
     tree = ET.parse(xml_path)
     root = tree.getroot()
     return [{'tag': elem.tag.lower(), 'attributes': elem.attrib, 'source': 'XML'} for elem in root.iter() if elem.tag != root.tag]
 
-def load_and_enrich_corpus(corpus_path):
-    corpus_df = pd.read_csv(corpus_path, dtype=str, low_memory=False)
+def load_and_enrich_corpus():
+    print("Loading and enriching hardcoded vocabulary corpus...")
+    corpus_df = pd.read_csv(CORPUS_PATH, dtype=str, low_memory=False)
     enriched_corpus = []
     for _, row in corpus_df.iterrows():
         term = str(row.get("concept_name", ""))
@@ -41,6 +43,7 @@ def load_and_enrich_corpus(corpus_path):
     return enriched_corpus
 
 def perform_matching(metadata, enriched_corpus, semantic_knowledge):
+    print("Performing lexical and semantic matching...")
     vectorizer = TfidfVectorizer()
     matching_results = []
     xml_terms = {item['tag']: item for item in semantic_knowledge}
@@ -69,12 +72,15 @@ def perform_matching(metadata, enriched_corpus, semantic_knowledge):
     
     return matching_results
 
-def generate_harmonization_report(matching_results):
-    file_path = os.path.join(app.config['RESULTS_FOLDER'], "data_harmonization_report.xlsx")
+def generate_harmonization_report(matching_results, input_filename):
+    print("Generating harmonization report...")
+    report_filename = f"{input_filename}_data_harmonization_report.xlsx"
+    file_path = os.path.join(app.config['RESULTS_FOLDER'], report_filename)
     pd.DataFrame(matching_results).to_excel(file_path, index=False)
     return file_path
 
 def apply_final_harmonization(input_dataset_path, harmonization_report_path):
+    print("Applying final harmonization to dataset...")
     dataset = pd.read_csv(input_dataset_path)
     harmonization_df = pd.read_excel(harmonization_report_path)
     rename_mapping = {row['Feature Name']: row['Matched Term'] for _, row in harmonization_df.iterrows() if row['Feature Name'] in dataset.columns}
@@ -86,30 +92,21 @@ def apply_final_harmonization(input_dataset_path, harmonization_report_path):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        print("Processing uploaded files...")
         report_file = request.files['report']
         xml_file = request.files['xml']
-        corpus_file = request.files['corpus']
         dataset_file = request.files.get('dataset')
-
-        report_path = os.path.join(app.config['UPLOAD_FOLDER'], report_file.filename)
-        xml_path = os.path.join(app.config['UPLOAD_FOLDER'], xml_file.filename)
-        corpus_path = os.path.join(app.config['UPLOAD_FOLDER'], corpus_file.filename)
         
-        report_file.save(report_path)
-        xml_file.save(xml_path)
-        corpus_file.save(corpus_path)
-        
-        metadata = extract_metadata_from_report(report_path)
-        semantic_knowledge = extract_semantic_knowledge_from_xml(xml_path)
-        enriched_corpus = load_and_enrich_corpus(corpus_path)
+        metadata = extract_metadata_from_report(report_file)
+        semantic_knowledge = extract_semantic_knowledge_from_xml(xml_file)
+        enriched_corpus = load_and_enrich_corpus()
+        input_filename = os.path.splitext(os.path.basename(report_file.filename))[0]
         matching_results = perform_matching(metadata, enriched_corpus, semantic_knowledge)
-        harmonization_report_path = generate_harmonization_report(matching_results)
+        harmonization_report_path = generate_harmonization_report(matching_results, input_filename)
         harmonized_dataset_path = None
         
         if dataset_file and dataset_file.filename:
-            dataset_path = os.path.join(app.config['UPLOAD_FOLDER'], dataset_file.filename)
-            dataset_file.save(dataset_path)
-            harmonized_dataset_path = apply_final_harmonization(dataset_path, harmonization_report_path)
+            harmonized_dataset_path = apply_final_harmonization(dataset_file, harmonization_report_path)
         
         return render_template(
             'index.html',

@@ -11,18 +11,14 @@
    <h3 style="color:white;font-family:Calibri;text-align:center">Upload Required Files for Harmonization</h3>
    <form method="post" enctype="multipart/form-data">
        <label style="color:white;font-family:Calibri;text-align:center">Data Quality Report (.xlsx):</label>
-       <input type="file" name="report" style="color:white;">
+       <input type="file" name="report" style="color:white;" required>
        <br><br>
        
        <label style="color:white;font-family:Calibri;text-align:center">Ontology Model (.xml/.owl):</label>
-       <input type="file" name="xml" style="color:white;">
+       <input type="file" name="xml" style="color:white;" required>
        <br><br>
        
-       <label style="color:white;font-family:Calibri;text-align:center">Vocabulary Corpus (.csv):</label>
-       <input type="file" name="corpus" style="color:white;">
-       <br><br>
-       
-       <label style="color:white;font-family:Calibri;text-align:center">Dataset for Harmonization (.csv):</label>
+       <label style="color:white;font-family:Calibri;text-align:center">Dataset for Harmonization (.csv) (Optional):</label>
        <input type="file" name="dataset" style="color:white;">
        <br><br>
        
@@ -37,7 +33,6 @@
     {% elif message %}
         <p style="color: red;font-family: Calibri">{{ message }}</p>
     {% endif %}
-
 
     <div style="display: flex; justify-content: center; align-items: center; font-family: Calibri;">
         <p style="color: rgba(255, 255, 255, 0.79); margin-right: 10px;">Developed by</p>
